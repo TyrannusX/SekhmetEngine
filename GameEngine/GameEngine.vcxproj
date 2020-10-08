@@ -164,7 +164,6 @@
     <ClInclude Include="Include\Engine\Engine.h" />
     <ClInclude Include="Include\Graphics\Graphics.h" />
     <ClInclude Include="Include\Gui\Gui.h" />
-    <ClInclude Include="Include\System\Updateable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -32,9 +32,6 @@
     <ClInclude Include="Include\Engine\Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\System\Updateable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Gui\Gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>

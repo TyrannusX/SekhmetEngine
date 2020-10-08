@@ -1,3 +1,7 @@
+/*
+* Copyright (c) 2020 Robert Reyes
+* License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
+*/
 #include "Gui/Gui.h"
 
 namespace SekhmetEngine
@@ -22,7 +26,7 @@ namespace SekhmetEngine
 		glfwSetKeyCallback(window, KeyCallback);
 	}
 
-	void Gui::OnDestroy()
+	void Gui::Destroy()
 	{
 		std::cout << "Destroying GUI" << std::endl;
 		glfwDestroyWindow(window);
@@ -47,7 +51,7 @@ namespace SekhmetEngine
 		return glfwWindowShouldClose(window);
 	}
 
-	void Gui::OnUpdate()
+	void Gui::Update()
 	{
 		glfwPollEvents();
 	}

@@ -1,3 +1,7 @@
+/*
+* Copyright (c) 2020 Robert Reyes
+* License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
+*/
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include "Graphics/Graphics.h"
@@ -30,7 +34,7 @@ namespace SekhmetEngine
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x008000ff, 1.0f, 0);
 	}
 
-	void Graphics::OnUpdate()
+	void Graphics::Update()
 	{
 		bgfx::setViewRect(0, 0, 0, width, height);
 		bgfx::touch(0);
@@ -38,7 +42,7 @@ namespace SekhmetEngine
 		bgfx::frame();
 	}
 
-	void Graphics::OnDestroy()
+	void Graphics::Destroy()
 	{
 		std::cout << "Destroying Graphics" << std::endl;
 		bgfx::shutdown();
