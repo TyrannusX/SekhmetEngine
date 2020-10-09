@@ -13,18 +13,12 @@ using namespace std;
 int main(int argc, char** argv)
 {
     //Initialize engine and task scheduler
-    enki::TaskScheduler* taskScheduler = new enki::TaskScheduler();
-    taskScheduler->Initialize();
     SekhmetEngine::Engine* engine = new SekhmetEngine::Engine();
     engine->Initialize();
-
-    //spawn main thread (it all begins here)
-    taskScheduler->AddTaskSetToPipe(engine);
-    taskScheduler->WaitforTask(engine, enki::TASK_PRIORITY_HIGH);
+    engine->Run();
 
     //cleanup
     engine->Destroy();
     delete engine;
-    delete taskScheduler;
     return 0;
 }

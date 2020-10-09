@@ -36,7 +36,6 @@ namespace SekhmetEngine
 
 	void Graphics::Update()
 	{
-		bgfx::setViewRect(0, 0, 0, width, height);
 		bgfx::touch(0);
 		bgfx::dbgTextPrintf(0, 0, 0x0f, "Welcome to SekhmetEngine");
 		bgfx::frame();
@@ -46,5 +45,18 @@ namespace SekhmetEngine
 	{
 		std::cout << "Destroying Graphics" << std::endl;
 		bgfx::shutdown();
+	}
+
+	void Graphics::ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_)
+	{
+		Update();
+	}
+
+	void Graphics::SetViewRectSize(int widthIn, int heightIn)
+	{
+		width = widthIn;
+		height = heightIn;
+
+		bgfx::setViewRect(0, 0, 0, width, height);
 	}
 }

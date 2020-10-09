@@ -7,17 +7,21 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <enkiTS/TaskScheduler.h>
 
 namespace SekhmetEngine
 {
-	class Graphics
+	class Graphics : public enki::ITaskSet
 	{
 		private:
 			int width;
 			int height;
 		public:
 			void Initialize(GLFWwindow* renderTargetWindow);
+			void Render();
 			void Update();
 			void Destroy();
+			void SetViewRectSize(int widthIn, int heightIn);
+			void ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_) override;
 	};
 }

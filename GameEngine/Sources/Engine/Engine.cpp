@@ -5,6 +5,7 @@
 #include <thread>
 #include <iostream>
 #include <bgfx/bgfx.h>
+#include <GLFW/glfw3.h>
 #include "Engine/Engine.h"
 
 namespace SekhmetEngine
@@ -43,13 +44,20 @@ namespace SekhmetEngine
 	{
 		while (!gui->IsExited())
 		{
+			//run GUI/OS Window on main thread
 			gui->Update();
-			graphics->Update();
-		}
-	}
 
-	void Engine::ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_)
-	{
-		Run();
+			//run other systems on separate threads
+			taskScheduler->AddTaskSetToPipe(graphics);
+
+			//wait for all to complete
+			taskScheduler->WaitforTask(graphics);
+
+			//Reconcile systems
+			int updatedWidth;
+			int updatedHeight;
+			glfwGetWindowSize(gui->GetWindow(), &updatedWidth, &updatedHeight);
+			graphics->SetViewRectSize(updatedWidth, updatedHeight);
+		}
 	}
 }

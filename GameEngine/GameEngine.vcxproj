@@ -151,19 +151,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\code\c++\game-engine\GameEngine\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;psapi.lib;mimalloc-static.lib;enkiTS.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;psapi.lib;mimalloc-static.lib;enkiTS.lib;glfw3.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Components\StaticMeshComponent.cpp" />
+    <ClCompile Include="Sources\Entity\Entity.cpp" />
     <ClCompile Include="Sources\Engine\Engine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Sources\Graphics\Graphics.cpp" />
     <ClCompile Include="Sources\Gui\Gui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Components\StaticMeshComponent.h" />
     <ClInclude Include="Include\Engine\Engine.h" />
+    <ClInclude Include="Include\Entity\Entity.h" />
     <ClInclude Include="Include\Graphics\Graphics.h" />
     <ClInclude Include="Include\Gui\Gui.h" />
+    <ClInclude Include="Include\Sound\Sound.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
