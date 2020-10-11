@@ -3,6 +3,7 @@
 * License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
 */
 #pragma once
+#include <iostream>
 #include <string>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

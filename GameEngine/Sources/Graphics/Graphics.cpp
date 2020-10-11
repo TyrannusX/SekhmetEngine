@@ -2,6 +2,7 @@
 * Copyright (c) 2020 Robert Reyes
 * License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
 */
+#include <fstream>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include "Graphics/Graphics.h"
@@ -32,6 +33,28 @@ namespace SekhmetEngine
 		//set the background color and enable debug text
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x008000ff, 1.0f, 0);
+
+		//loader shaders
+		vertexShader = LoadShader("shaders\\vertex-shader.bin");
+		std::cout << vertexShader.idx << std::endl;
+		if (vertexShader.idx == bgfx::kInvalidHandle)
+		{
+			throw std::exception("Vertex shader failed to create");
+		}
+
+		fragmentShader = LoadShader("shaders\\fragment-shader.bin");
+		std::cout << fragmentShader.idx << std::endl;
+		if (fragmentShader.idx == bgfx::kInvalidHandle)
+		{
+			throw std::exception("Fragment shader failed to create");
+		}
+
+		programHandle = bgfx::createProgram(vertexShader, fragmentShader, true);
+		std::cout << programHandle.idx << std::endl;
+		if (programHandle.idx == bgfx::kInvalidHandle)
+		{
+			throw std::exception("Program failed to create");
+		}
 
 		entities = entitiesIn;
 	}
@@ -85,10 +108,39 @@ namespace SekhmetEngine
 					positionVertices[j * 3 + 2] = scene->mMeshes[i]->mVertices[j].z;
 				}
 
-				const bgfx::VertexLayout vertexLayout;
-				bgfx::createVertexLayout(vertexLayout);
-				bgfx::createVertexBuffer(bgfx::makeRef(positionVertices, sizeof(positionVertices)), vertexLayout);
+				//define the vertex layout in the obj and create vertex buffer handle
+				bgfx::VertexLayout vertexLayout;
+				vertexLayout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float);
+				bgfx::VertexBufferHandle vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(positionVertices, sizeof(positionVertices)), vertexLayout);
+
+				//submit to pipeline for rendering
+				bgfx::setVertexBuffer(0, vertexBufferHandle);
+				bgfx::submit(0, programHandle);
 			}
 		}
+	}
+
+	bgfx::ShaderHandle Graphics::LoadShader(std::string shaderPath)
+	{
+		//setup shader file handle with binary format
+		std::ifstream shaderFileHandle(shaderPath, std::ios::binary);
+
+		//get shader file size by seeking to end and resetting to beginning
+		size_t fileSize;
+		shaderFileHandle.seekg(0, std::ios::end);
+		fileSize = shaderFileHandle.tellg();
+		shaderFileHandle.seekg(0, std::ios::beg);
+
+		//read the binary data
+		char* shaderBinaryData = new char[2048];
+		shaderFileHandle.read(shaderBinaryData, fileSize);
+
+		//copy the binary data into a bgfx memory handler
+		const bgfx::Memory* shaderMemory = bgfx::copy(shaderBinaryData, fileSize + 1);
+
+		//create a shader handler
+		bgfx::ShaderHandle shaderHandle = bgfx::createShader(shaderMemory);
+		
+		return shaderHandle;
 	}
 }

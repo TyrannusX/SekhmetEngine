@@ -10,6 +10,7 @@ namespace SekhmetEngine
 	void StaticMeshComponent::LoadModel(const std::string& file)
 	{
 		Assimp::Importer* importer = new Assimp::Importer();
+		std::cout << file << std::endl;
 		staticMesh = importer->ReadFile(file, 0);
 	}
 

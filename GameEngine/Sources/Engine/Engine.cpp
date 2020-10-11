@@ -56,7 +56,7 @@ namespace SekhmetEngine
 				{
 					case ComponentType::StaticMesh:
 						StaticMeshComponent* staticMeshComponent = new StaticMeshComponent();
-						staticMeshComponent->LoadModel((const std::string)&componentTypeToInitialize["meshPath"]);
+						staticMeshComponent->LoadModel((const std::string)component["meshPath"]);
 						nextEntity->AddComponent(staticMeshComponent);
 				}
 			}
