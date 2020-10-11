@@ -12,4 +12,9 @@ namespace SekhmetEngine
 		Assimp::Importer* importer = new Assimp::Importer();
 		staticMesh = importer->ReadFile(file, 0);
 	}
+
+	const aiScene* StaticMeshComponent::GetModel()
+	{
+		return staticMesh;
+	}
 }

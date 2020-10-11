@@ -4,9 +4,13 @@
 */
 #include <thread>
 #include <iostream>
+#include <fstream>
 #include <bgfx/bgfx.h>
 #include <GLFW/glfw3.h>
+#include <json/json.hpp>
 #include "Engine/Engine.h"
+#include "Components/ComponentTypes.h"
+#include "Components/StaticMeshComponent.h"
 
 namespace SekhmetEngine
 {
@@ -22,15 +26,51 @@ namespace SekhmetEngine
 
 	void Engine::Initialize()
 	{
+		//initialize task scheduler
 		std::cout << "Initializing Main Engine\n";
 		taskScheduler = new enki::TaskScheduler();
 		taskScheduler->Initialize();
+
+		//create entities with entities.json
+		std::ifstream jsonFileHandle("entities.json");
+		std::string temp;
+		std::string jsonContent;
+		while (std::getline(jsonFileHandle, temp))
+		{
+			jsonContent += temp;
+		}
+		nlohmann::json entitiesJson = nlohmann::json::parse(jsonContent);
+		auto entitiesArray = entitiesJson["entities"];
+		for (auto& entity : entitiesArray)
+		{
+			//create entity
+			Entity* nextEntity = new Entity();
+			nextEntity->Initialize(entity["name"]);
+
+			//create and attach components to entity
+			auto componentsArray = entity["components"];
+			for (auto& component : componentsArray)
+			{
+				int componentTypeToInitialize = component["type"];
+				switch (componentTypeToInitialize)
+				{
+					case ComponentType::StaticMesh:
+						StaticMeshComponent* staticMeshComponent = new StaticMeshComponent();
+						staticMeshComponent->LoadModel((const std::string)&componentTypeToInitialize["meshPath"]);
+						nextEntity->AddComponent(staticMeshComponent);
+				}
+			}
+
+			//add entity to list
+			entities.push_back(nextEntity);
+		}
+		
 
 		gui = new Gui();
 		gui->Initialize();
 
 		graphics = new Graphics();
-		graphics->Initialize(gui->GetWindow());
+		graphics->Initialize(gui->GetWindow(), entities);
 	}
 
 	void Engine::Destroy()

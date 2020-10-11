@@ -4,19 +4,21 @@
 */
 #pragma once
 #include <vector>
+#include <string>
 
 namespace SekhmetEngine
 {
-	template<typename T>
 	class Entity
 	{
 		private:
 			static long long nextId;
-			std::vector<T*>	components;
+			std::string entityName;
+			std::vector<void*>	components;
 			long long id;
 		public:
-			void Initialize();
-			void AddComponent(T* component);
+			void Initialize(std::string entityNameIn);
+			void AddComponent(void* component);
 			void RemoveComponent(int index);
+			std::vector<void*> GetComponents();
 	};
 }

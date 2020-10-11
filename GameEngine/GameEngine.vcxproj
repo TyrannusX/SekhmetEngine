@@ -163,6 +163,7 @@
     <ClCompile Include="Sources\Gui\Gui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Components\ComponentTypes.h" />
     <ClInclude Include="Include\Components\StaticMeshComponent.h" />
     <ClInclude Include="Include\Engine\Engine.h" />
     <ClInclude Include="Include\Entity\Entity.h" />

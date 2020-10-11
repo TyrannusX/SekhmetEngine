@@ -8,7 +8,7 @@
 
 namespace SekhmetEngine
 {
-	void Graphics::Initialize(GLFWwindow* renderTargetWindow)
+	void Graphics::Initialize(GLFWwindow* renderTargetWindow, std::vector<Entity*> entitiesIn)
 	{
 		std::cout << "Initialize Graphics" << std::endl;
 
@@ -32,6 +32,8 @@ namespace SekhmetEngine
 		//set the background color and enable debug text
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x008000ff, 1.0f, 0);
+
+		entities = entitiesIn;
 	}
 
 	void Graphics::Update()
@@ -49,6 +51,7 @@ namespace SekhmetEngine
 
 	void Graphics::ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_)
 	{
+		Render();
 		Update();
 	}
 
@@ -58,5 +61,34 @@ namespace SekhmetEngine
 		height = heightIn;
 
 		bgfx::setViewRect(0, 0, 0, width, height);
+	}
+
+	void Graphics::Render()
+	{
+		//Get component's model
+		//const aiScene* scene
+		StaticMeshComponent* staticMeshComponent = (StaticMeshComponent*)entities[0]->GetComponents()[0];
+		const aiScene* scene = staticMeshComponent->GetModel();
+
+		//foreach mesh in component
+		for (int i = 0; i < scene->mNumMeshes; i++)
+		{
+			//Create buffer for position vertices
+			if (scene->mMeshes[i]->HasPositions())
+			{
+				float* positionVertices = new float[scene->mMeshes[i]->mNumVertices * 3];
+
+				for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+				{
+					positionVertices[j * 3] = scene->mMeshes[i]->mVertices[j].x;
+					positionVertices[j * 3 + 1] = scene->mMeshes[i]->mVertices[j].y;
+					positionVertices[j * 3 + 2] = scene->mMeshes[i]->mVertices[j].z;
+				}
+
+				const bgfx::VertexLayout vertexLayout;
+				bgfx::createVertexLayout(vertexLayout);
+				bgfx::createVertexBuffer(bgfx::makeRef(positionVertices, sizeof(positionVertices)), vertexLayout);
+			}
+		}
 	}
 }

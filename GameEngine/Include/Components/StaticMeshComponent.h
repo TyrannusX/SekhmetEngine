@@ -15,5 +15,6 @@ namespace SekhmetEngine
 			const aiScene* staticMesh;
 		public:
 			void LoadModel(const std::string& file);
+			const aiScene* GetModel();
 	};
 }

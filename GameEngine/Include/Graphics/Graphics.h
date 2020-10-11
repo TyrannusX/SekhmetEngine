@@ -5,9 +5,12 @@
 #pragma once
 #define GLFW_EXPOSE_NATIVE_WIN32 1
 #include <iostream>
+#include <vector>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <enkiTS/TaskScheduler.h>
+#include "Components/StaticMeshComponent.h"
+#include "Entity/Entity.h"
 
 namespace SekhmetEngine
 {
@@ -16,8 +19,9 @@ namespace SekhmetEngine
 		private:
 			int width;
 			int height;
+			std::vector<Entity*> entities;
 		public:
-			void Initialize(GLFWwindow* renderTargetWindow);
+			void Initialize(GLFWwindow* renderTargetWindow, std::vector<Entity*> entitiesIn);
 			void Render();
 			void Update();
 			void Destroy();

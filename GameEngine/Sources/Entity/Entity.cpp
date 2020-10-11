@@ -6,23 +6,24 @@
 
 namespace SekhmetEngine
 {
-	template<typename T>
-	long long Entity<T>::nextId = 0;
+	long long Entity::nextId = 0;
 
-	template<typename T>
-	void Entity<T>::Initialize()
+	void Entity::Initialize(std::string entityNameIn)
 	{
 	}
 
-	template<typename T>
-	void Entity<T>::AddComponent(T* component)
+	void Entity::AddComponent(void* component)
 	{
 		components.push_back(component);
 	}
 
-	template<typename T>
-	void Entity<T>::RemoveComponent(int index)
+	void Entity::RemoveComponent(int index)
 	{
 		components.erase(components.begin() + index);
+	}
+
+	std::vector<void*> Entity::GetComponents()
+	{
+		return components;
 	}
 }
