@@ -88,10 +88,14 @@ namespace SekhmetEngine
 			gui->Update();
 
 			//run other systems on separate threads
+			std::cout << "ADDING GRAPHICS TO TASK" << std::endl;
 			taskScheduler->AddTaskSetToPipe(graphics);
+			std::cout << "DONE ADDING" << std::endl;
 
 			//wait for all to complete
+			std::cout << "WAITING FOR GRAPHICS TASK" << std::endl;
 			taskScheduler->WaitforTask(graphics);
+			std::cout << "DONE WAITING" << std::endl;
 
 			//Reconcile systems
 			int updatedWidth;
