@@ -32,7 +32,7 @@ namespace SekhmetEngine
 		taskScheduler->Initialize();
 
 		//create entities with entities.json
-		std::ifstream jsonFileHandle("entities.json");
+		std::ifstream jsonFileHandle("C:\\code\\c++\\game-engine\\GameEngine\\x64\\Debug\\entities.json");
 		std::string temp;
 		std::string jsonContent;
 		while (std::getline(jsonFileHandle, temp))

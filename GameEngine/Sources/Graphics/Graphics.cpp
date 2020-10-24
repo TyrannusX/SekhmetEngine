@@ -23,13 +23,13 @@ namespace SekhmetEngine
 
 		//initialize bgfx (renderer)
 		bgfx::Init init;
-		init.type = bgfx::RendererType::Vulkan;
+		init.type = bgfx::RendererType::OpenGL;
 		init.platformData.nwh = glfwGetWin32Window(renderTargetWindow);
 		init.resolution.width = width;
 		init.resolution.height = height;
 		init.resolution.reset = BGFX_RESET_VSYNC;
-		GraphicsCallback graphicsCallback;
-		init.callback = &graphicsCallback;
+		/*GraphicsCallback graphicsCallback;
+		init.callback = &graphicsCallback;*/
 
 		if (!bgfx::init(init))
 		{
@@ -42,7 +42,7 @@ namespace SekhmetEngine
 
 		//loader shaders
 		std::cout << "VERTEX BEGIN" << std::endl;
-		vertexShader = LoadShader("shaders\\vert.bin");
+		vertexShader = LoadShader("C:\\code\\c++\\game-engine\\GameEngine\\x64\\Debug\\shaders\\vert.bin");
 		if (vertexShader.idx == bgfx::kInvalidHandle)
 		{
 			throw std::exception("Vertex shader failed to create");
@@ -50,7 +50,7 @@ namespace SekhmetEngine
 		std::cout << "VERTEX END" << std::endl;
 
 		std::cout << "FRAG BEGIN" << std::endl;
-		fragmentShader = LoadShader("shaders\\frag.bin");
+		fragmentShader = LoadShader("C:\\code\\c++\\game-engine\\GameEngine\\x64\\Debug\\shaders\\frag.bin");
 		if (fragmentShader.idx == bgfx::kInvalidHandle)
 		{
 			throw std::exception("Fragment shader failed to create");
