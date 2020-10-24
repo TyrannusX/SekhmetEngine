@@ -40,29 +40,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file CreateAnimMesh.h
- *  Create AnimMesh from Mesh
+/** @file ColladaMetaData.h
+ * Declares common metadata constants used by Collada files
  */
 #pragma once
-#ifndef INCLUDED_AI_CREATE_ANIM_MESH_H
-#define INCLUDED_AI_CREATE_ANIM_MESH_H
+#ifndef AI_COLLADAMETADATA_H_INC
+#define AI_COLLADAMETADATA_H_INC
 
-#ifdef __GNUC__
-#   pragma GCC system_header
+#define AI_METADATA_COLLADA_ID "Collada_id"
+#define AI_METADATA_COLLADA_SID "Collada_sid"
+
 #endif
-
-#include <assimp/mesh.h>
-
-namespace Assimp {
-
-/**
- *  Create aiAnimMesh from aiMesh.
- *  @param  mesh    The input mesh to create an animated mesh from.
- *  @return The new created animated mesh.
- */
-ASSIMP_API aiAnimMesh *aiCreateAnimMesh(const aiMesh *mesh);
-
-} // end of namespace Assimp
-
-#endif // INCLUDED_AI_CREATE_ANIM_MESH_H
-

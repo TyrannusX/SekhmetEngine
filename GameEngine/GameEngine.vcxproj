@@ -77,7 +77,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -124,14 +124,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\code\c++\game-engine\GameEngine\Include;C:\code\c++\game-engine\GameEngine\GameEngine\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\code\c++\game-engine\GameEngine\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;mimalloc-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psapi.lib;assimp-vc142-mtd.lib;bgfxDebug.lib;bimgDebug.lib;bxDebug.lib;enkiTS.lib;glfw3.lib;mimalloc-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -168,6 +168,7 @@
     <ClInclude Include="Include\Engine\Engine.h" />
     <ClInclude Include="Include\Entity\Entity.h" />
     <ClInclude Include="Include\Graphics\Graphics.h" />
+    <ClInclude Include="Include\Graphics\Vertex.h" />
     <ClInclude Include="Include\Gui\Gui.h" />
     <ClInclude Include="Include\Sound\Sound.h" />
   </ItemGroup>

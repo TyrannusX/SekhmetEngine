@@ -6,7 +6,9 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 #include "Graphics/Graphics.h"
+#include "Graphics/Vertex.h"
 
 namespace SekhmetEngine
 {
@@ -69,6 +71,11 @@ namespace SekhmetEngine
 	void Graphics::Update()
 	{
 		std::cout << "UPDATING" << std::endl;
+		bgfx::touch(0);
+		bgfx::setVertexBuffer(0, vertexBufferHandle);
+		bgfx::setIndexBuffer(indexBufferHandle[0]);
+		bgfx::setState(BGFX_STATE_DEFAULT);
+		bgfx::submit(0, programHandle);
 		bgfx::dbgTextPrintf(0, 0, 0x0f, "Welcome to SekhmetEngine");
 		bgfx::frame();
 		std::cout << "DONE UPDATING" << std::endl;
@@ -101,57 +108,68 @@ namespace SekhmetEngine
 		//const aiScene* scene
 		StaticMeshComponent* staticMeshComponent = (StaticMeshComponent*)entities[0]->GetComponents()[0];
 		const aiScene* scene = staticMeshComponent->GetModel();
+		std::vector<Vertex> vertices;
+		std::vector<int> indices;
 
 		//foreach mesh in component
 		for (int i = 0; i < scene->mNumMeshes; i++)
 		{
-			//Create buffer for position vertices
+			//store the positions, normals, and texture coordinates
 			if (scene->mMeshes[i]->HasPositions())
 			{
-				std::vector<glm::vec3> vertices;
-
 				for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
 				{
-					glm::vec3 vertex;
-					vertex.x = scene->mMeshes[i]->mVertices[j].x;
-					vertex.y = scene->mMeshes[i]->mVertices[j].y;
-					vertex.z = scene->mMeshes[i]->mVertices[j].z;
+					glm::vec3 position;
+					position.x = scene->mMeshes[i]->mVertices[j].x;
+					position.y = scene->mMeshes[i]->mVertices[j].y;
+					position.z = scene->mMeshes[i]->mVertices[j].z;
+
+					glm::vec3 normal;
+					normal.x = scene->mMeshes[i]->mNormals[j].x;
+					normal.y = scene->mMeshes[i]->mNormals[j].y;
+					normal.z = scene->mMeshes[i]->mNormals[j].z;
+
+					glm::vec2 textureCoordinate;
+					if (scene->mMeshes[i]->mTextureCoords[0])
+					{
+						textureCoordinate.x = scene->mMeshes[i]->mTextureCoords[0][j].x;
+						textureCoordinate.y = scene->mMeshes[i]->mTextureCoords[0][j].y;
+					}
+					else
+					{
+						textureCoordinate.x = 0.0f;
+						textureCoordinate.y = 0.0f;
+					}
+
+					Vertex vertex;
+					vertex.Position = position;
+					vertex.Normal = normal;
+					vertex.TextureCoordinates = textureCoordinate;
 					vertices.push_back(vertex);
 				}
-
-				//define the vertex layout in the obj and create vertex buffer handle
-				bgfx::VertexLayout vertexLayout;
-				vertexLayout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
-				vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size()), vertexLayout);
-
-				//submit to pipeline for rendering
-				bgfx::setVertexBuffer(0, vertexBufferHandle);
 			}
 
-			//create buffer for indices
+			//store the face indices
 			if (scene->mMeshes[i]->HasFaces())
 			{	
-				std::vector<int> vertexIndices, uvIndices, normalIndices;
 				for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++)
 				{
-					vertexIndices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[0]);
-					uvIndices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[1]);
-					normalIndices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[2]);
+					for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++)
+					{
+						indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[k]);
+					}
 				}
-
-				//define the vertex layout in the obj and create vertex buffer handle
-				indexBufferHandle[0] = bgfx::createIndexBuffer(bgfx::makeRef(vertexIndices.data(), vertexIndices.size()));
-				indexBufferHandle[1] = bgfx::createIndexBuffer(bgfx::makeRef(uvIndices.data(), uvIndices.size()));
-				indexBufferHandle[2] = bgfx::createIndexBuffer(bgfx::makeRef(normalIndices.data(), normalIndices.size()));
-
-				//submit to pipeline for rendering
-				bgfx::setIndexBuffer(indexBufferHandle[0]);
-
-				std::cout << vertexIndices.size() << std::endl;
 			}
 
-			bgfx::setState(BGFX_STATE_DEFAULT);
-			bgfx::submit(0, programHandle);
+			bgfx::VertexLayout vertexLayout;
+			vertexLayout.begin()
+				.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+				.end();
+
+			vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size()), vertexLayout);
+			indexBufferHandle[0] = bgfx::createIndexBuffer(bgfx::makeRef(indices.data(), indices.size()));
 		}
 	}
 

@@ -166,8 +166,17 @@ ENKITS_API void* enki::DefaultAllocFunc( size_t align_, size_t size_, void* user
 #ifdef _WIN32
     pRet = (void*)_aligned_malloc( size_, align_ );
 #else
-    int retval = posix_memalign( &pRet, align_, size_ );
-    (void)retval;	//unused
+    pRet = nullptr;
+    if( align_ <= size_ && align_ <= alignof(int64_t) )
+    {
+        // no need for alignment, use malloc
+        pRet = malloc( size_ );
+    }
+    else
+    {
+        int retval = posix_memalign( &pRet, align_, size_ );
+        (void)retval;	//unused
+    }
 #endif
     return pRet;
 };
@@ -968,7 +977,7 @@ void TaskScheduler::DeleteArray( T* p_, size_t num_, const char* file_, int line
 template<class T, class... Args>
 T* TaskScheduler::New( const char* file_, int line_, Args&&... args_ )
 {
-    T* pRet = (T*)m_Config.customAllocator.alloc( alignof(T), sizeof(T), m_Config.customAllocator.userData, file_, line_ );
+    T* pRet = this->Alloc<T>( file_, line_ );
     return new(pRet) T( std::forward<Args>(args_)... );
 }
 
@@ -976,6 +985,19 @@ template< typename T >
 void TaskScheduler::Delete( T* p_, const char* file_, int line_  )
 {
     p_->~T(); 
+    this->Free(p_, file_, line_ );
+}
+
+template< typename T >
+T* TaskScheduler::Alloc( const char* file_, int line_  )
+{
+    T* pRet = (T*)m_Config.customAllocator.alloc( alignof(T), sizeof(T), m_Config.customAllocator.userData, file_, line_ );
+    return pRet;
+}
+
+template< typename T >
+void TaskScheduler::Free( T* p_, const char* file_, int line_  )
+{
     m_Config.customAllocator.free( p_, sizeof(T), m_Config.customAllocator.userData, file_, line_ );
 }
 
@@ -1157,7 +1179,7 @@ namespace enki
 
 semaphoreid_t* TaskScheduler::SemaphoreNew()
 {
-    semaphoreid_t* pSemaphore = New<semaphoreid_t>( ENKI_FILE_AND_LINE );
+    semaphoreid_t* pSemaphore = this->Alloc<semaphoreid_t>( ENKI_FILE_AND_LINE );
     SemaphoreCreate( *pSemaphore );
     return pSemaphore;
 }
@@ -1165,7 +1187,7 @@ semaphoreid_t* TaskScheduler::SemaphoreNew()
 void TaskScheduler::SemaphoreDelete( semaphoreid_t* pSemaphore_ )
 {
     SemaphoreClose( *pSemaphore_ );
-    Delete( pSemaphore_, ENKI_FILE_AND_LINE );
+    this->Free( pSemaphore_, ENKI_FILE_AND_LINE );
 }
 
 void TaskScheduler::SetCustomAllocator( CustomAllocator customAllocator_ )
