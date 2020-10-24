@@ -1,3 +1,7 @@
+/*
+* Copyright (c) 2020 Robert Reyes
+* License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
+*/
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
