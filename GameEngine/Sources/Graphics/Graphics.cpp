@@ -9,6 +9,10 @@
 #include <bgfx/platform.h>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Graphics/Graphics.h"
 #include "Graphics/Vertex.h"
 
@@ -38,7 +42,7 @@ namespace SekhmetEngine
 
 		//set the background color and enable debug text
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
-		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xfffffff, 1.0f, 0);
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
 		bgfx::setViewRect(0, 0, 0, width, height);
 
 		//loader shaders
@@ -65,12 +69,27 @@ namespace SekhmetEngine
 
 	void Graphics::Update()
 	{
+		//camera transform
+		const bx::Vec3 at = { 0.0f, 0.0f,  0.0f };
+		const bx::Vec3 eye = { 0.0f, 0.0f, 50.0f };
+		float view[16];
+		bx::mtxLookAt(view, eye, at);
+		float proj[16];
+		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(0, view, proj);
+
 		bgfx::setViewRect(0, 0, 0, width, height);
-		bgfx::setViewTransform(0, 0, 0);
 		bgfx::touch(0);
 
+		//object transform
+		float mtx[16];
+		bx::mtxRotateY(mtx, 0.0f);
+		mtx[12] = 0.0f;
+		mtx[13] = 0.0f;
+		mtx[14] = -50.0f;
+		bgfx::setTransform(mtx);
+
 		bgfx::setVertexBuffer(0, vertexBufferHandle);
-		bgfx::setIndexBuffer(indexBufferHandle[0]);
 		bgfx::setState(BGFX_STATE_DEFAULT);
 		bgfx::submit(0, programHandle);
 		bgfx::dbgTextPrintf(0, 0, 0xF5DE91f, "Welcome to SekhmetEngine");
@@ -102,70 +121,49 @@ namespace SekhmetEngine
 		//Get component's model
 		//const aiScene* scene
 		StaticMeshComponent* staticMeshComponent = (StaticMeshComponent*)entities[0]->GetComponents()[0];
-		const aiScene* scene = staticMeshComponent->GetModel();
-		std::vector<Vertex> vertices;
-		std::vector<int> indices;
+		std::vector<tinyobj::shape_t> shape = staticMeshComponent->GetModel();
+		tinyobj::attrib_t attributes = staticMeshComponent->GetAttributes();
+		std::vector<float> vertices;
+		std::vector<unsigned int> indices;
 
-		//foreach mesh in component
-		for (int i = 0; i < scene->mNumMeshes; i++)
+		//loop over all vertex entries in the obj
+		for (unsigned int i = 0; i < shape.size(); i++)
 		{
-			//store the positions, normals, and texture coordinates
-			if (scene->mMeshes[i]->HasPositions())
+			unsigned int index_offset = 0;
+			for (unsigned int j = 0; j < shape[i].mesh.num_face_vertices.size(); j++)
 			{
-				for (int j = 0; j < scene->mMeshes[i]->mNumVertices; j++)
+				//current row in obj
+				unsigned int faceVertices = shape[i].mesh.num_face_vertices[j];
+				for (unsigned int k = 0; k < faceVertices; k++)
 				{
-					glm::vec3 position;
-					position.x = scene->mMeshes[i]->mVertices[j].x;
-					position.y = scene->mMeshes[i]->mVertices[j].y;
-					position.z = scene->mMeshes[i]->mVertices[j].z;
+					tinyobj::index_t index = shape[i].mesh.indices[index_offset + k];
 
-					glm::vec3 normal;
-					normal.x = scene->mMeshes[i]->mNormals[j].x;
-					normal.y = scene->mMeshes[i]->mNormals[j].y;
-					normal.z = scene->mMeshes[i]->mNormals[j].z;
+					//get position
+					vertices.push_back((float)attributes.vertices[3 * index.vertex_index + 0]);
+					vertices.push_back((float)attributes.vertices[3 * index.vertex_index + 1]);
+					vertices.push_back((float)attributes.vertices[3 * index.vertex_index + 2]);
 
-					glm::vec2 textureCoordinate;
-					if (scene->mMeshes[i]->mTextureCoords[0])
-					{
-						textureCoordinate.x = scene->mMeshes[i]->mTextureCoords[0][j].x;
-						textureCoordinate.y = scene->mMeshes[i]->mTextureCoords[0][j].y;
-					}
-					else
-					{
-						textureCoordinate.x = 0.0f;
-						textureCoordinate.y = 0.0f;
-					}
+					//get normal
+					vertices.push_back((float)attributes.normals[3 * index.normal_index + 0]);
+					vertices.push_back((float)attributes.normals[3 * index.normal_index + 1]);
+					vertices.push_back((float)attributes.normals[3 * index.normal_index + 2]);
 
-					Vertex vertex;
-					vertex.Position = position;
-					vertex.Normal = normal;
-					vertex.TextureCoordinates = textureCoordinate;
-					vertices.push_back(vertex);
+					//get texture coordinates
+					vertices.push_back((float)attributes.texcoords[2 * index.texcoord_index + 0]);
+					vertices.push_back((float)attributes.texcoords[2 * index.texcoord_index + 1]);
 				}
+				index_offset += faceVertices;
 			}
-
-			//store the face indices
-			if (scene->mMeshes[i]->HasFaces())
-			{	
-				for (int j = 0; j < scene->mMeshes[i]->mNumFaces; j++)
-				{
-					for (int k = 0; k < scene->mMeshes[i]->mFaces[j].mNumIndices; k++)
-					{
-						indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[k]);
-					}
-				}
-			}
-
-			bgfx::VertexLayout vertexLayout;
-			vertexLayout.begin()
-				.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-				.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
-				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-				.end();
-
-			vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size()), vertexLayout);
-			indexBufferHandle[0] = bgfx::createIndexBuffer(bgfx::makeRef(indices.data(), indices.size()));
 		}
+
+		bgfx::VertexLayout vertexLayout;
+		vertexLayout.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.end();
+
+		vertexBufferHandle = bgfx::createVertexBuffer(bgfx::makeRef(vertices.data(), vertices.size()), vertexLayout);
 	}
 
 	bgfx::ShaderHandle Graphics::LoadShader(std::string shaderPath)

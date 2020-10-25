@@ -79,7 +79,6 @@ namespace SekhmetEngine
 			bgfx::ShaderHandle fragmentShader;
 			bgfx::ProgramHandle programHandle;
 			bgfx::VertexBufferHandle vertexBufferHandle;
-			bgfx::IndexBufferHandle indexBufferHandle[3];
 		public:
 			void Initialize(GLFWwindow* renderTargetWindow, std::vector<Entity*> entitiesIn);
 			void Render();

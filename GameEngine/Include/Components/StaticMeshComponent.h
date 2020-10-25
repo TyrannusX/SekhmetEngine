@@ -5,17 +5,19 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
+#include <vector>
+#include <tinyobjloader/tiny_obj_loader.h>
 
 namespace SekhmetEngine
 {
 	class StaticMeshComponent
 	{
 		private:
-			const aiScene* staticMesh;
+			std::vector<tinyobj::shape_t> shape;
+			tinyobj::attrib_t attributes;
 		public:
 			void LoadModel(const std::string& file);
-			const aiScene* GetModel();
+			std::vector<tinyobj::shape_t> GetModel();
+			tinyobj::attrib_t GetAttributes();
 	};
 }

@@ -9,13 +9,16 @@ namespace SekhmetEngine
 {
 	void StaticMeshComponent::LoadModel(const std::string& file)
 	{
-		Assimp::Importer* importer = new Assimp::Importer();
-		std::cout << file << std::endl;
-		staticMesh = importer->ReadFile(file, 0);
+		tinyobj::LoadObj(&attributes, &shape, nullptr, nullptr, nullptr, file.c_str());
 	}
 
-	const aiScene* StaticMeshComponent::GetModel()
+	std::vector<tinyobj::shape_t> StaticMeshComponent::GetModel()
 	{
-		return staticMesh;
+		return shape;
+	}
+
+	tinyobj::attrib_t StaticMeshComponent::GetAttributes()
+	{
+		return attributes;
 	}
 }

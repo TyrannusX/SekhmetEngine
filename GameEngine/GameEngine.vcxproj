@@ -131,7 +131,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\code\c++\game-engine\GameEngine\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>psapi.lib;assimp-vc142-mtd.lib;bgfxDebug.lib;bimgDebug.lib;bxDebug.lib;enkiTS.lib;glfw3.lib;mimalloc-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psapi.lib;assimp-vc142-mtd.lib;bgfxDebug.lib;bimgDebug.lib;bxDebug.lib;enkiTS.lib;glfw3.lib;mimalloc-static.lib;tinyobjloader.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

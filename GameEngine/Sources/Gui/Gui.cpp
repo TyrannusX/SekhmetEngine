@@ -17,7 +17,7 @@ namespace SekhmetEngine
 
 		glfwSetErrorCallback(ErrorCallback);
 
-		window = glfwCreateWindow(640, 480, "Sekhmet Engine", NULL, NULL);
+		window = glfwCreateWindow(1440, 900, "Sekhmet Engine", NULL, NULL);
 		if (!window)
 		{
 			throw std::exception("Failed to create window with rendering context");
