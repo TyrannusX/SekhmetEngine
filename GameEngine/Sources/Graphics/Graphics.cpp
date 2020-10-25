@@ -4,6 +4,8 @@
 */
 #include <fstream>
 #include <bgfx/bgfx.h>
+#include <bx/bx.h>
+#include <bx/math.h>
 #include <bgfx/platform.h>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
@@ -14,8 +16,6 @@ namespace SekhmetEngine
 {
 	void Graphics::Initialize(GLFWwindow* renderTargetWindow, std::vector<Entity*> entitiesIn)
 	{
-		std::cout << "Initialize Graphics" << std::endl;
-
 		//initial render call to tell bgfx to use the same thread as the window thread
 		bgfx::renderFrame();
 
@@ -38,52 +38,47 @@ namespace SekhmetEngine
 
 		//set the background color and enable debug text
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
-		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x008000ff, 1.0f, 0);
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xfffffff, 1.0f, 0);
+		bgfx::setViewRect(0, 0, 0, width, height);
 
 		//loader shaders
-		std::cout << "VERTEX BEGIN" << std::endl;
 		vertexShader = LoadShader("C:\\code\\c++\\game-engine\\GameEngine\\x64\\Debug\\shaders\\vert.bin");
 		if (vertexShader.idx == bgfx::kInvalidHandle)
 		{
 			throw std::exception("Vertex shader failed to create");
 		}
-		std::cout << "VERTEX END" << std::endl;
 
-		std::cout << "FRAG BEGIN" << std::endl;
 		fragmentShader = LoadShader("C:\\code\\c++\\game-engine\\GameEngine\\x64\\Debug\\shaders\\frag.bin");
 		if (fragmentShader.idx == bgfx::kInvalidHandle)
 		{
 			throw std::exception("Fragment shader failed to create");
 		}
-		std::cout << "FRAG END" << std::endl;
 
-		std::cout << "PROGRAM BEGIN" << std::endl;
 		programHandle = bgfx::createProgram(vertexShader, fragmentShader, true);
 		if (programHandle.idx == bgfx::kInvalidHandle)
 		{
 			throw std::exception("Program failed to create");
 		}
-		std::cout << "PROGRAM END" << std::endl;
 
 		entities = entitiesIn;
 	}
 
 	void Graphics::Update()
 	{
-		std::cout << "UPDATING" << std::endl;
+		bgfx::setViewRect(0, 0, 0, width, height);
+		bgfx::setViewTransform(0, 0, 0);
 		bgfx::touch(0);
+
 		bgfx::setVertexBuffer(0, vertexBufferHandle);
 		bgfx::setIndexBuffer(indexBufferHandle[0]);
 		bgfx::setState(BGFX_STATE_DEFAULT);
 		bgfx::submit(0, programHandle);
-		bgfx::dbgTextPrintf(0, 0, 0x0f, "Welcome to SekhmetEngine");
+		bgfx::dbgTextPrintf(0, 0, 0xF5DE91f, "Welcome to SekhmetEngine");
 		bgfx::frame();
-		std::cout << "DONE UPDATING" << std::endl;
 	}
 
 	void Graphics::Destroy()
 	{
-		std::cout << "Destroying Graphics" << std::endl;
 		bgfx::shutdown();
 	}
 
@@ -189,7 +184,6 @@ namespace SekhmetEngine
 		//copy the binary data into a bgfx memory handler
 		const bgfx::Memory* shaderMemory = bgfx::copy(shaderBinaryData.data(), fileSize + 1);
 
-		std::cout << "SIZE " << shaderMemory->size << std::endl;
 		//create a shader handler
 		bgfx::ShaderHandle shaderHandle = bgfx::createShader(shaderMemory);
 

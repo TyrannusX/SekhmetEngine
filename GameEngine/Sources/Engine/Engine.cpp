@@ -82,13 +82,13 @@ namespace SekhmetEngine
 
 	void Engine::Run()
 	{
+		graphics->Render();
 		while (!gui->IsExited())
 		{
 			//run GUI/OS Window on main thread
 			gui->Update();
 
 			//run other systems on separate threads
-			graphics->Render();
 			graphics->Update();
 
 			//Reconcile systems
