@@ -123,15 +123,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\code\c++\game-engine\GameEngine\Include;C:\code\c++\game-engine\GameEngine\GameEngine\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\code\c++\game-engine\GameEngine\Include;C:\code\c++\game-engine\GameEngine\GameEngine\Include;C:\VulkanSDK\1.1.126.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\code\c++\game-engine\GameEngine\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>psapi.lib;assimp-vc142-mtd.lib;bgfxDebug.lib;bimgDebug.lib;bxDebug.lib;enkiTS.lib;glfw3.lib;mimalloc-static.lib;tinyobjloader.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.126.0\Lib;C:\code\c++\game-engine\GameEngine\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>psapi.lib;assimp-vc142-mtd.lib;bgfxDebug.lib;bimgDebug.lib;bxDebug.lib;enkiTS.lib;glfw3.lib;mimalloc-static.lib;tinyobjloader.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
