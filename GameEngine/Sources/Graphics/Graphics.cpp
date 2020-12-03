@@ -28,17 +28,74 @@ namespace SekhmetEngine
 		vulkanAppInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		vulkanAppInfo.apiVersion = VK_API_VERSION_1_0;
 
+		//Get instance extension details from Vulkan API
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> instanceExtensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, instanceExtensions.data());
+
+		//Get instance layer details from Vulkan API for simple/built in validation
+		uint32_t layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		std::vector<VkLayerProperties> instanceLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, instanceLayers.data());
+
+		//Pull required Vulkan Instance extensions from GLFW
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
+		//Ensure Vulkan supports GLFW extensions (wont have a window otherwise)
+		std::cout << "CHECK FOR REQUIRED VULKAN INSTANCE EXTENSIONS" << std::endl;
+		for (int i = 0; i < glfwExtensionCount; i++)
+		{
+			bool error = true;
+			for (const auto& entry : instanceExtensions)
+			{
+				if ((strcmp(entry.extensionName, glfwExtensions[i]) != 0) && error)
+				{
+					error = true;
+				}
+				else
+				{
+					error = false;
+				}
+			}
+
+			if (error)
+			{
+				throw std::exception("Vulkan Instance Extensions Do Not Support GLFW");
+			}
+		}
+
+		//Check for built in validation layer
+		std::cout << "CHECK FOR REQUIRED VULKAN INSTANCE LAYERS" << std::endl;
+		bool builtinValidationLayerFound = false;
+		for (const auto& entry : instanceLayers)
+		{
+			if (strcmp(entry.layerName, "VK_LAYER_KHRONOS_validation") == 0)
+			{
+				builtinValidationLayerFound = true;
+			}
+		}
+
+		if (!builtinValidationLayerFound)
+		{
+			throw std::exception("Builtin Validation Layer Not Found");
+		}
+
+		const std::vector<const char*> layers = {
+			"VK_LAYER_KHRONOS_validation"
+		};
 		VkInstanceCreateInfo vulkanInstanceCreateInfo{};
 		vulkanInstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		vulkanInstanceCreateInfo.pApplicationInfo = &vulkanAppInfo;
 		vulkanInstanceCreateInfo.enabledExtensionCount = glfwExtensionCount;
 		vulkanInstanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
+		vulkanInstanceCreateInfo.ppEnabledLayerNames = layers.data();
 		vulkanInstanceCreateInfo.enabledLayerCount = 0;
 
+		std::cout << "CREATING VULKAN INSTANCE" << std::endl;
 		if (vkCreateInstance(&vulkanInstanceCreateInfo, nullptr, &vulkanInstance) != VK_SUCCESS)
 		{
 			throw std::exception("Failed to create vulkan instance");
