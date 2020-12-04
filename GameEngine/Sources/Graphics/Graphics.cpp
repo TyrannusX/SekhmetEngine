@@ -68,6 +68,9 @@ namespace SekhmetEngine
 			}
 		}
 
+		std::vector<const char*> extensionsVector(glfwExtensions, glfwExtensions + glfwExtensionCount);
+		extensionsVector.push_back("VK_EXT_debug_utils");
+
 		//Check for built in validation layer
 		std::cout << "CHECK FOR REQUIRED VULKAN INSTANCE LAYERS" << std::endl;
 		bool builtinValidationLayerFound = false;
@@ -84,22 +87,35 @@ namespace SekhmetEngine
 			throw std::exception("Builtin Validation Layer Not Found");
 		}
 
+		//Setup debug message callback
+		VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{};
+		debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		debugMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		debugMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		debugMessengerCreateInfo.pfnUserCallback = debugCallback;
+		debugMessengerCreateInfo.pUserData = nullptr;
+
+		//Create Vulkan Instance
 		const std::vector<const char*> layers = {
 			"VK_LAYER_KHRONOS_validation"
 		};
 		VkInstanceCreateInfo vulkanInstanceCreateInfo{};
 		vulkanInstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		vulkanInstanceCreateInfo.pApplicationInfo = &vulkanAppInfo;
-		vulkanInstanceCreateInfo.enabledExtensionCount = glfwExtensionCount;
-		vulkanInstanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
+		vulkanInstanceCreateInfo.enabledExtensionCount = (uint32_t)extensionsVector.size();
+		vulkanInstanceCreateInfo.ppEnabledExtensionNames = extensionsVector.data();
 		vulkanInstanceCreateInfo.ppEnabledLayerNames = layers.data();
 		vulkanInstanceCreateInfo.enabledLayerCount = 0;
+		vulkanInstanceCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugMessengerCreateInfo;
 
 		std::cout << "CREATING VULKAN INSTANCE" << std::endl;
 		if (vkCreateInstance(&vulkanInstanceCreateInfo, nullptr, &vulkanInstance) != VK_SUCCESS)
 		{
 			throw std::exception("Failed to create vulkan instance");
 		}
+
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+		func(vulkanInstance, &debugMessengerCreateInfo, nullptr, &debugMessenger);
 
 		//load shaders
 
@@ -112,7 +128,10 @@ namespace SekhmetEngine
 
 	void Graphics::Destroy()
 	{
-		vkDestroyInstance(vulkanInstance, nullptr);
+		//destroy the debug callback
+		/*auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
+		func(vulkanInstance, debugMessenger, nullptr);
+		vkDestroyInstance(vulkanInstance, nullptr);*/
 	}
 
 	void Graphics::ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_)
@@ -189,5 +208,17 @@ namespace SekhmetEngine
 		//create a shader handler
 
 		shaderFileHandle.close();
+	}
+
+	//Callback function for Vulkan to pass validation layer error messages back to
+	VKAPI_ATTR VkBool32 VKAPI_CALL Graphics::debugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+		void* userData
+	)
+	{
+		std::cerr << "validation layer: " << callbackData->pMessage << std::endl;
+		return VK_FALSE;
 	}
 }
