@@ -3,6 +3,7 @@
 * License file: https://github.com/TyrannusX/SekhmetEngine/blob/main/LICENSE
 */
 #include <fstream>
+#include <optional>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
@@ -11,6 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Graphics/Graphics.h"
 #include "Graphics/Vertex.h"
+#include "Graphics/QueueFamilyIndices.h"
 
 namespace SekhmetEngine
 {
@@ -82,11 +84,6 @@ namespace SekhmetEngine
 			}
 		}
 
-		if (!builtinValidationLayerFound)
-		{
-			throw std::exception("Builtin Validation Layer Not Found");
-		}
-
 		//Setup debug message callback
 		VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{};
 		debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -99,6 +96,10 @@ namespace SekhmetEngine
 		const std::vector<const char*> layers = {
 			"VK_LAYER_KHRONOS_validation"
 		};
+		const std::vector<const char*> extensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
 		VkInstanceCreateInfo vulkanInstanceCreateInfo{};
 		vulkanInstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		vulkanInstanceCreateInfo.pApplicationInfo = &vulkanAppInfo;
@@ -117,6 +118,102 @@ namespace SekhmetEngine
 		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
 		func(vulkanInstance, &debugMessengerCreateInfo, nullptr, &debugMessenger);
 
+		//Setup Surface
+		VkWin32SurfaceCreateInfoKHR  createSurfaceInfo{};
+		createSurfaceInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		createSurfaceInfo.hwnd = glfwGetWin32Window(renderTargetWindow);
+		createSurfaceInfo.hinstance = GetModuleHandle(nullptr);
+		if (vkCreateWin32SurfaceKHR(vulkanInstance, &createSurfaceInfo, nullptr, &vulkanSurface) != VK_SUCCESS)
+		{
+			throw std::exception("Failed to Create Surface");
+		}
+
+		//Attach Vulkan to Graphics Card
+		uint32_t physicalDeviceCount = 0;
+		vkEnumeratePhysicalDevices(vulkanInstance, &physicalDeviceCount, nullptr);
+		if (physicalDeviceCount == 0)
+		{
+			throw std::exception("No Graphics Card Found");
+		}
+		std::vector<VkPhysicalDevice> devices(physicalDeviceCount);
+		vkEnumeratePhysicalDevices(vulkanInstance, &physicalDeviceCount, devices.data());
+		vulkanPhysicalDevice = devices.front();
+
+		//Select Physical Device Queue to Process Vulkan Commands
+		std::optional<uint32_t> graphicsFamily;
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, nullptr);
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(vulkanPhysicalDevice, &queueFamilyCount, queueFamilies.data());
+
+		//Locate the Queue Family Indices
+		QueueFamilyIndices indices;
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies)
+		{
+			//Check for the graphics queue
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
+			}
+
+			//Check for the presentation queue
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(vulkanPhysicalDevice, i, vulkanSurface, &presentSupport);
+			if (presentSupport)
+			{
+				indices.presentationFamily = i;
+			}
+
+			i++;
+		}
+
+		//Throw error if the physical device does not contain the graphics queue family
+		//Cant submit graphics commands with this
+		if (!indices.graphicsFamily.has_value())
+		{
+			throw std::exception("Graphics Queue Family Not Found");
+		}
+
+		//Setup the Device Queues
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		float queuePriority = 1.0f; //1.0 is highest priority queue
+
+		//Graphics Queue Creation Info
+		VkDeviceQueueCreateInfo vkDeviceQueueCreateInfo{};
+		vkDeviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		vkDeviceQueueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+		vkDeviceQueueCreateInfo.queueCount = 1;
+		vkDeviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(vkDeviceQueueCreateInfo);
+
+		//Presentation Queue Creation Info
+		VkDeviceQueueCreateInfo vkDeviceQueueCreateInfo2{};
+		vkDeviceQueueCreateInfo2.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		vkDeviceQueueCreateInfo2.queueFamilyIndex = indices.presentationFamily.value();
+		vkDeviceQueueCreateInfo2.queueCount = 1;
+		vkDeviceQueueCreateInfo2.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(vkDeviceQueueCreateInfo2);
+
+		//Create the Logical Device (will submit commands)
+		VkDeviceCreateInfo vkDeviceCreateInfo{};
+		vkDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		vkDeviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+		vkDeviceCreateInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
+		vkDeviceCreateInfo.enabledExtensionCount = 1;
+		vkDeviceCreateInfo.ppEnabledExtensionNames = extensions.data();
+		vkDeviceCreateInfo.enabledLayerCount = (uint32_t)layers.size();
+		vkDeviceCreateInfo.ppEnabledLayerNames = layers.data();
+
+		if (vkCreateDevice(vulkanPhysicalDevice, &vkDeviceCreateInfo, nullptr, &vulkanLogicalDevice) != VK_SUCCESS)
+		{
+			throw std::exception("Failed to Create Logical Device");
+		}
+
+		//Assign a reference to the implicitly created queue
+		vkGetDeviceQueue(vulkanLogicalDevice, indices.graphicsFamily.value(), 0, &vulkanGraphicsQueueHandle);
+		vkGetDeviceQueue(vulkanLogicalDevice, indices.presentationFamily.value(), 0, &vulkanPresentationQueueHandle);
+
 		//load shaders
 
 		entities = entitiesIn;
@@ -129,9 +226,11 @@ namespace SekhmetEngine
 	void Graphics::Destroy()
 	{
 		//destroy the debug callback
-		/*auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(vulkanInstance, "vkDestroyDebugUtilsMessengerEXT");
 		func(vulkanInstance, debugMessenger, nullptr);
-		vkDestroyInstance(vulkanInstance, nullptr);*/
+		vkDestroyDevice(vulkanLogicalDevice, nullptr);
+		vkDestroySurfaceKHR(vulkanInstance, vulkanSurface, nullptr);
+		vkDestroyInstance(vulkanInstance, nullptr);
 	}
 
 	void Graphics::ExecuteRange(enki::TaskSetPartition range_, uint32_t threadnum_)

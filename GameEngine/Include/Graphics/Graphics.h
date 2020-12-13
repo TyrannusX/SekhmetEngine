@@ -10,6 +10,7 @@
 #include <GLFW/glfw3native.h>
 #include <enkiTS/TaskScheduler.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
 #include "Components/StaticMeshComponent.h"
 #include "Entity/Entity.h"
 
@@ -20,9 +21,16 @@ namespace SekhmetEngine
 		private:
 			int width;
 			int height;
-			std::vector<Entity*> entities;
-			VkInstance vulkanInstance;
-			VkDebugUtilsMessengerEXT debugMessenger;
+			std::vector<Entity*> entities; //list of entities to iterate through
+			VkInstance vulkanInstance; //instance (container for Vulkan to run in)
+			VkPhysicalDevice vulkanPhysicalDevice; //physical devie (selected graphics card)
+			VkDevice vulkanLogicalDevice; //logical device that submits commands to queue for physical device to process
+			VkQueue vulkanGraphicsQueueHandle; //queue that passes commands from the logical device to the physical device
+			VkQueue vulkanPresentationQueueHandle;
+			VkDebugUtilsMessengerEXT debugMessenger; //debug messenger
+			VkSurfaceKHR vulkanSurface; //surface that Vulkan "draws" to. Interfaces with underlying windows system (GLFW in this case)
+
+			//Debug Callback for Vulkan to Print to stderr
 			static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 				VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 				VkDebugUtilsMessageTypeFlagsEXT messageType,
